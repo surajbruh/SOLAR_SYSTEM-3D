@@ -1,9 +1,10 @@
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/Addons.js"
+import { degToRad } from "three/src/math/MathUtils.js"
 
 // scene
 const scene = new THREE.Scene()
-scene.background = new THREE.Color(0xcccccc)
+// scene.background = new THREE.Color(0xcccccc)
 
 // camera
 const camera = new THREE.PerspectiveCamera(
@@ -23,23 +24,127 @@ const controls = new OrbitControls(camera, renderer.domElement)
 controls.enableDamping = true
 controls.dampingFactor = 0.05
 
-camera.position.set(0, 0, 10)
+controls.minDistance = 10
+controls.maxDistance = 1000
+
+camera.position.set(85, 5, 0)
 controls.update()
 
+// instantiate a loader
+const textureLoader = new THREE.TextureLoader()
+const cubeTextureLoader = new THREE.CubeTextureLoader()
+cubeTextureLoader.setPath("static/textures/cubeMaps/")
+const backgroundCubeMap = cubeTextureLoader.load([
+  'px.png',
+  'nx.png',
+  'py.png',
+  'ny.png',
+  'pz.png',
+  'nz.png'
+]);
+
+scene.background = backgroundCubeMap
+
 // axes
-const originAxes = new THREE.AxesHelper(10)
-scene.add(originAxes)
+const originAxes = new THREE.AxesHelper(100)
+// scene.add(originAxes)
 
 // sphere
 const sphereGeometry = new THREE.SphereGeometry(1, 32, 32)
-const sphereMaterial = new THREE.MeshStandardMaterial()
 
-const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial)
-scene.add(sphereMesh)
+const sunTexture = textureLoader.load("static/textures/sun.png")
+const sunMaterial = new THREE.MeshStandardMaterial({ map: sunTexture })
 
-// ambient light
-const ambientLight = new THREE.AmbientLight(0x404040, 3)
+const sunMesh = new THREE.Mesh(sphereGeometry, sunMaterial)
 
+sunMesh.scale.setScalar(10)
+scene.add(sunMesh)
+
+// materials
+const mercuryMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/mercury.png") })
+const venusMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/venus.png") })
+const earthMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/earth.png") })
+const moonMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/moon.png") })
+const marsMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/mars.png") })
+
+const planets = [
+  {
+    name: "mercury",
+    radius: 1,
+    distance: 20,
+    speed: 1,
+    material: mercuryMaterial
+  },
+  {
+    name: "venus",
+    radius: 2.4,
+    distance: 40,
+    speed: 1.5,
+    material: venusMaterial
+  },
+  {
+    name: "earth",
+    radius: 2.6,
+    distance: 60,
+    speed: 3,
+    material: earthMaterial,
+    moons:
+      [
+        {
+          name: "moon",
+          radius: 0.2,
+          distance: 2,
+          speed: 6,
+          material: moonMaterial
+        }
+      ]
+  },
+  {
+    name: "mars",
+    radius: 1.5,
+    distance: 80,
+    speed: 2.5,
+    material: marsMaterial
+  },
+]
+
+const createPlanetMesh = (planet) => {
+  const planetMesh = new THREE.Mesh(sphereGeometry, planet.material)
+
+  planetMesh.scale.setScalar(planet.radius)
+  planetMesh.position.x = planet.distance
+
+  return planetMesh
+}
+
+const createMoonMesh = (moon) => {
+  const moonMesh = new THREE.Mesh(sphereGeometry, moon.material)
+
+  moonMesh.scale.setScalar(moon.radius)
+  moonMesh.position.x = moon.distance
+
+  return moonMesh
+}
+
+const planetModels = planets.map((planet) => {
+  const planetMesh = createPlanetMesh(planet)
+  scene.add(planetMesh)
+
+  if (planet.moons) {
+    planet.moons.forEach((moon) => {
+      const moonMesh = createMoonMesh(moon)
+      planetMesh.add(moonMesh)
+    })
+  }
+
+  return planetMesh
+})
+
+// lights
+const sunLight = new THREE.PointLight(0xffffff, 5000, 0, 2);
+sunMesh.add(sunLight);
+
+const ambientLight = new THREE.AmbientLight(0x404040, 5)
 scene.add(ambientLight)
 
 window.addEventListener("resize", () => {
@@ -49,9 +154,35 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight)
 })
 
+// clock
+let previousTime = 0;
+const clock = new THREE.Clock()
+
 // animation loop
 function animate() {
   requestAnimationFrame(animate)
+
+  const currentTime = clock.getElapsedTime()
+  const delta = currentTime - previousTime
+
+  previousTime = currentTime
+
+  sunMesh.rotation.y += degToRad(1) * delta * 15
+
+  planetModels.forEach((planet, planetIndex) => {
+    planet.rotation.y += degToRad(1) * delta * planets[planetIndex].speed * 25
+
+    planet.position.x = Math.sin(planet.rotation.y) * planets[planetIndex].distance
+    planet.position.z = Math.cos(planet.rotation.y) * planets[planetIndex].distance
+
+    if (planet.children) {
+      planet.children.forEach((child, index) => {
+        child.rotation.y += degToRad(1) * delta * planets[planetIndex].moons[index].speed * 25
+        child.position.x = Math.sin(child.rotation.y) * planets[planetIndex].moons[index].distance
+        child.position.z = Math.cos(child.rotation.y) * planets[planetIndex].moons[index].distance
+      })
+    }
+  })
 
   controls.update()
   renderer.render(scene, camera)
