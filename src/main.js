@@ -4,7 +4,7 @@ import { degToRad } from "three/src/math/MathUtils.js"
 
 // scene
 const scene = new THREE.Scene()
-// scene.background = new THREE.Color(0xcccccc)
+scene.background = new THREE.Color(0xcccccc)
 
 // camera
 const camera = new THREE.PerspectiveCamera(
@@ -27,7 +27,7 @@ controls.dampingFactor = 0.05
 controls.minDistance = 10
 controls.maxDistance = 1000
 
-camera.position.set(85, 5, 0)
+camera.position.set(-150, 75, -150)
 controls.update()
 
 // instantiate a loader
@@ -54,6 +54,7 @@ const sphereGeometry = new THREE.SphereGeometry(1, 32, 32)
 
 const sunTexture = textureLoader.load("static/textures/sun.png")
 const sunMaterial = new THREE.MeshStandardMaterial({ map: sunTexture })
+sunMaterial.roughness = 0
 
 const sunMesh = new THREE.Mesh(sphereGeometry, sunMaterial)
 
@@ -66,46 +67,81 @@ const venusMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("
 const earthMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/earth.png") })
 const moonMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/moon.png") })
 const marsMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/mars.png") })
+const jupiterMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/jupiter.png") });
+const saturnMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/saturn.png") });
+const uranusMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/uranus.png") });
+const neptuneMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/neptune.png") });
 
 const planets = [
   {
     name: "mercury",
     radius: 1,
     distance: 20,
-    speed: 1,
+    speed: 4.7,
     material: mercuryMaterial
   },
   {
     name: "venus",
     radius: 2.4,
-    distance: 40,
-    speed: 1.5,
+    distance: 30,
+    speed: 3.5,
     material: venusMaterial
   },
   {
     name: "earth",
     radius: 2.6,
-    distance: 60,
+    distance: 40,
     speed: 3,
     material: earthMaterial,
-    moons:
-      [
-        {
-          name: "moon",
-          radius: 0.2,
-          distance: 2,
-          speed: 6,
-          material: moonMaterial
-        }
-      ]
+    moons: [
+      {
+        name: "moon",
+        radius: 0.25,
+        distance: 3,
+        speed: 6,
+        material: moonMaterial
+      }
+    ]
   },
   {
     name: "mars",
-    radius: 1.5,
-    distance: 80,
-    speed: 2.5,
+    radius: 1.8,
+    distance: 55,
+    speed: 2.4,
     material: marsMaterial
   },
+  {
+    name: "jupiter",
+    radius: 7,
+    distance: 75,
+    speed: 1.3,
+    material: jupiterMaterial
+  },
+  {
+    name: "saturn",
+    radius: 6,
+    distance: 100,
+    speed: 1,
+    material: saturnMaterial,
+    rings: {
+      innerRadius: 1.5,
+      outerRadius: 2,
+    }
+  },
+  {
+    name: "uranus",
+    radius: 4,
+    distance: 125,
+    speed: 0.7,
+    material: uranusMaterial
+  },
+  {
+    name: "neptune",
+    radius: 3.8,
+    distance: 150,
+    speed: 0.5,
+    material: neptuneMaterial
+  }
 ]
 
 const createPlanetMesh = (planet) => {
@@ -137,14 +173,29 @@ const planetModels = planets.map((planet) => {
     })
   }
 
+  if (planet.rings) {
+    const geometry = new THREE.RingGeometry(planet.rings.innerRadius, planet.rings.outerRadius)
+    const material = new THREE.MeshStandardMaterial({ map: textureLoader.load("static/textures/saturn_ring..png") })
+    material.side = THREE.DoubleSide
+
+    const ringMesh = new THREE.Mesh(geometry, material)
+    ringMesh.rotation.x = degToRad(113)
+
+    planetMesh.add(ringMesh)
+    // ringMesh.add(originAxes)
+  }
+
   return planetMesh
 })
 
 // lights
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+scene.add(directionalLight);
+
 const sunLight = new THREE.PointLight(0xffffff, 5000, 0, 2);
 sunMesh.add(sunLight);
 
-const ambientLight = new THREE.AmbientLight(0x404040, 5)
+const ambientLight = new THREE.AmbientLight(0x404040, 3)
 scene.add(ambientLight)
 
 window.addEventListener("resize", () => {
@@ -175,9 +226,16 @@ function animate() {
     planet.position.x = Math.sin(planet.rotation.y) * planets[planetIndex].distance
     planet.position.z = Math.cos(planet.rotation.y) * planets[planetIndex].distance
 
+    // console.log(planet)
     if (planet.children) {
       planet.children.forEach((child, index) => {
-        child.rotation.y += degToRad(1) * delta * planets[planetIndex].moons[index].speed * 25
+        if (child.geometry.type === "RingGeometry") {
+          console.log(child)
+          child.rotation.z += degToRad(1) * delta * 25
+          return
+        }
+
+        child.rotation.y += degToRad(1) * delta * planets[planetIndex].moons[index]?.speed * 25
         child.position.x = Math.sin(child.rotation.y) * planets[planetIndex].moons[index].distance
         child.position.z = Math.cos(child.rotation.y) * planets[planetIndex].moons[index].distance
       })
