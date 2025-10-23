@@ -4,7 +4,6 @@ import { degToRad } from "three/src/math/MathUtils.js"
 
 // scene
 const scene = new THREE.Scene()
-scene.background = new THREE.Color(0xcccccc)
 
 // camera
 const camera = new THREE.PerspectiveCamera(
