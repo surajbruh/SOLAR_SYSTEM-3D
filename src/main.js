@@ -32,7 +32,7 @@ controls.update()
 // instantiate a loader
 const textureLoader = new THREE.TextureLoader()
 const cubeTextureLoader = new THREE.CubeTextureLoader()
-cubeTextureLoader.setPath("static/textures/cubeMaps/")
+cubeTextureLoader.setPath("/textures/cubeMaps/")
 const backgroundCubeMap = cubeTextureLoader.load([
   'px.png',
   'nx.png',
@@ -51,7 +51,7 @@ const originAxes = new THREE.AxesHelper(100)
 // sphere
 const sphereGeometry = new THREE.SphereGeometry(1, 32, 32)
 
-const sunTexture = textureLoader.load("static/textures/sun.png")
+const sunTexture = textureLoader.load("/textures/sun.png")
 const sunMaterial = new THREE.MeshStandardMaterial({ map: sunTexture })
 sunMaterial.roughness = 0
 
@@ -61,15 +61,15 @@ sunMesh.scale.setScalar(10)
 scene.add(sunMesh)
 
 // materials
-const mercuryMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/mercury.png") })
-const venusMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/venus.png") })
-const earthMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/earth.png") })
-const moonMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/moon.png") })
-const marsMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/mars.png") })
-const jupiterMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/jupiter.png") });
-const saturnMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/saturn.png") });
-const uranusMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/uranus.png") });
-const neptuneMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("static/textures/neptune.png") });
+const mercuryMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("/textures/mercury.png") })
+const venusMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("/textures/venus.png") })
+const earthMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("/textures/earth.png") })
+const moonMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("/textures/moon.png") })
+const marsMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("/textures/mars.png") })
+const jupiterMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("/textures/jupiter.png") });
+const saturnMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("/textures/saturn.png") });
+const uranusMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("/textures/uranus.png") });
+const neptuneMaterial = new THREE.MeshPhysicalMaterial({ map: textureLoader.load("/textures/neptune.png") });
 
 const planets = [
   {
@@ -174,7 +174,7 @@ const planetModels = planets.map((planet) => {
 
   if (planet.rings) {
     const geometry = new THREE.RingGeometry(planet.rings.innerRadius, planet.rings.outerRadius)
-    const material = new THREE.MeshStandardMaterial({ map: textureLoader.load("static/textures/saturn_ring..png") })
+    const material = new THREE.MeshStandardMaterial({ map: textureLoader.load("/textures/saturn_ring..png") })
     material.side = THREE.DoubleSide
 
     const ringMesh = new THREE.Mesh(geometry, material)
