@@ -229,7 +229,6 @@ function animate() {
     if (planet.children) {
       planet.children.forEach((child, index) => {
         if (child.geometry.type === "RingGeometry") {
-          console.log(child)
           child.rotation.z += degToRad(1) * delta * 25
           return
         }
