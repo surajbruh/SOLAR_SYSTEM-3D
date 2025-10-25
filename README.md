@@ -57,7 +57,9 @@ npm run preview
 ## 🧑‍💻 Author
 
 **Suraj Yadav**  
-[GitHub](https://github.com/surajbruh)
+🌐[LinkedIn](https://www.linkedin.com/in/suraj-yadav-b15a1b36b)
+
+📖[GitHub](https://github.com/surajbruh)
 
 ## 📄 License
 
